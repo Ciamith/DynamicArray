@@ -1,34 +1,14 @@
 #include "DynamicArray.h"
-#include <iostream>
-#include <stdexcept>
 
-using namespace std;
-
-DynamicArray::DynamicArray(int s) {
-    size = s;
-    capacity = s;
-    if (capacity > 0) {
-        data = new int[capacity];
-        for (int i = 0; i < size; i++) {
-            data[i] = 0;
-        }
+DynamicArray::DynamicArray(int n) {
+    if (n <= 0) {
+        throw std::invalid_argument("Taille doit etre positive");
     }
-    else {
-        data = nullptr;
-    }
-}
-
-DynamicArray::DynamicArray(const DynamicArray& other) {
-    size = other.size;
-    capacity = other.capacity;
-    if (capacity > 0) {
-        data = new int[capacity];
-        for (int i = 0; i < size; i++) {
-            data[i] = other.data[i];
-        }
-    }
-    else {
-        data = nullptr;
+    size = n;
+    capacity = n;
+    data = new int[capacity];
+    for (int i = 0; i < size; i++) {
+        data[i] = 0;
     }
 }
 
@@ -36,70 +16,89 @@ DynamicArray::~DynamicArray() {
     delete[] data;
 }
 
-void DynamicArray::print() {
-    cout << "[ ";
+DynamicArray::DynamicArray(const DynamicArray& other) {
+    size = other.size;
+    capacity = other.capacity;
+    data = new int[capacity];
     for (int i = 0; i < size; i++) {
-        cout << data[i];
-        if (i < size - 1) cout << ", ";
+        data[i] = other.data[i];
     }
-    cout << " ]" << endl;
 }
 
-int DynamicArray::get(int index) {
+DynamicArray& DynamicArray::operator=(const DynamicArray& other) {
+    if (this != &other) {
+        delete[] data;
+        size = other.size;
+        capacity = other.capacity;
+        data = new int[capacity];
+        for (int i = 0; i < size; i++) {
+            data[i] = other.data[i];
+        }
+    }
+    return *this;
+}
+
+void DynamicArray::push_back(int value) {
+    if (value < -100 || value > 100) {
+        throw std::invalid_argument("Valeur hors de [-100, 100]");
+    }
+    if (size >= capacity) {
+        int newCap = capacity * 2;
+        int* newData = new int[newCap];
+        for (int i = 0; i < size; i++) {
+            newData[i] = data[i];
+        }
+        delete[] data;
+        data = newData;
+        capacity = newCap;
+    }
+    data[size] = value;
+    size++;
+}
+
+int DynamicArray::get(int index) const {
     if (index < 0 || index >= size) {
-        throw out_of_range("Index invalide");
+        throw std::out_of_range("Index hors limites");
     }
     return data[index];
 }
 
 void DynamicArray::set(int index, int value) {
     if (index < 0 || index >= size) {
-        throw out_of_range("Index invalide");
+        throw std::out_of_range("Index hors limites");
     }
     if (value < -100 || value > 100) {
-        throw invalid_argument("Valeur doit etre entre -100 et 100");
+        throw std::invalid_argument("Valeur hors de [-100, 100]");
     }
     data[index] = value;
 }
 
-void DynamicArray::push_back(int value) {
-    if (value < -100 || value > 100) {
-        throw invalid_argument("Valeur doit etre entre -100 et 100");
+DynamicArray DynamicArray::add(const DynamicArray& other) const {
+    int minSize = size < other.size ? size : other.size;
+    DynamicArray result(minSize);
+    for (int i = 0; i < minSize; i++) {
+        result.data[i] = get(i) + other.get(i);
     }
-
-    if (size == capacity) {
-        int new_capacity = (capacity == 0) ? 1 : capacity * 2;
-        int* new_data = new int[new_capacity];
-
-        for (int i = 0; i < size; i++) {
-            new_data[i] = data[i];
-        }
-
-        delete[] data;
-        data = new_data;
-        capacity = new_capacity;
-    }
-
-    data[size] = value;
-    size++;
+    return result;
 }
 
-void DynamicArray::add(const DynamicArray& other) {
-    for (int i = 0; i < size; i++) {
-        int val_other = 0;
-        if (i < other.size) {
-            val_other = other.data[i];
-        }
-        data[i] += val_other;
+DynamicArray DynamicArray::sub(const DynamicArray& other) const {
+    int minSize = size < other.size ? size : other.size;
+    DynamicArray result(minSize);
+    for (int i = 0; i < minSize; i++) {
+        result.data[i] = get(i) - other.get(i);
     }
+    return result;
 }
 
-void DynamicArray::sub(const DynamicArray& other) {
+void DynamicArray::print() const {
+    std::cout << "[ ";
     for (int i = 0; i < size; i++) {
-        int val_other = 0;
-        if (i < other.size) {
-            val_other = other.data[i];
-        }
-        data[i] -= val_other;
+        std::cout << data[i] << " ";
     }
+    std::cout << "]" << std::endl;
+}
+
+int DynamicArray::getSize() const {
+    return size;
 }

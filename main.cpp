@@ -1,49 +1,39 @@
-#include "DynamicArray.h"
 #include <iostream>
+#include "DynamicArray.h"
 
 using namespace std;
 
 int main() {
-    cout << "--- Test 1 : Creation et affichage ---" << endl;
-    DynamicArray arr1(3);
-    arr1.set(0, 10);
-    arr1.set(1, -50);
-    arr1.set(2, 100);
-    arr1.print();
 
-    cout << "\n--- Test 2 : Constructeur de copie ---" << endl;
-    DynamicArray arr2(arr1);
-    arr2.set(0, 99);
-    cout << "arr2 (copie modifiee) : ";
-    arr2.print();
-    cout << "arr1 (original) : ";
-    arr1.print();
+    // Test 1 : std::bad_alloc
+    cout << "Test 1 (bad_alloc) :" << endl;
+    try {
+        DynamicArray arr(1000000000);
+    }
+    catch (const bad_alloc& e) {
+        cout << "Exception bad_alloc attrapee : pas assez de memoire" << endl;
+    }
 
-    cout << "\n--- Test 3 : Ajout a la fin (push_back) ---" << endl;
-    DynamicArray arr3(2);
-    arr3.set(0, 5);
-    arr3.set(1, 5);
-    arr3.push_back(10);
-    arr3.push_back(-100);
-    arr3.print();
+    // Test 2 : std::out_of_range
+    cout << "\nTest 2 (out_of_range) :" << endl;
+    try {
+        DynamicArray arr(5);
+        arr.set(2, 50);
+        cout << arr.get(10) << endl;
+    }
+    catch (const out_of_range& e) {
+        cout << "Exception out_of_range attrapee : " << e.what() << endl;
+    }
 
-    cout << "\n--- Test 4 : Addition et soustraction ---" << endl;
-    DynamicArray arrA(4);
-    arrA.set(0, 10); arrA.set(1, 20); arrA.set(2, 30); arrA.set(3, 40);
-
-    DynamicArray arrB(2);
-    arrB.set(0, 5); arrB.set(1, 15);
-
-    cout << "arrA avant add : ";
-    arrA.print();
-
-    arrA.add(arrB);
-    cout << "arrA apres add : ";
-    arrA.print();
-
-    arrA.sub(arrB);
-    cout << "arrA apres sub : ";
-    arrA.print();
+    // Test 3 : std::invalid_argument
+    cout << "\nTest 3 (invalid_argument) :" << endl;
+    try {
+        DynamicArray arr(3);
+        arr.push_back(150);
+    }
+    catch (const invalid_argument& e) {
+        cout << "Exception invalid_argument attrapee : " << e.what() << endl;
+    }
 
     return 0;
 }
