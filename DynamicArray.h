@@ -1,5 +1,6 @@
-#ifndef DYNAMICARRAY_H
-#define DYNAMICARRAY_H
+#pragma once
+#include <iostream>
+#include <stdexcept>
 
 class DynamicArray {
 private:
@@ -8,16 +9,16 @@ private:
     int capacity;
 
 public:
-    DynamicArray(int s);
-    DynamicArray(const DynamicArray& other);
+    DynamicArray(int n = 4);
     ~DynamicArray();
+    DynamicArray(const DynamicArray& other);
+    DynamicArray& operator=(const DynamicArray& other);
 
-    void print();
-    int get(int index);
-    void set(int index, int value);
     void push_back(int value);
-    void add(const DynamicArray& other);
-    void sub(const DynamicArray& other);
+    int get(int index) const;
+    void set(int index, int value);
+    DynamicArray add(const DynamicArray& other) const;
+    DynamicArray sub(const DynamicArray& other) const;
+    void print() const;
+    int getSize() const;
 };
-
-#endif
