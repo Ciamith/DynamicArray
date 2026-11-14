@@ -1,26 +1,15 @@
 #pragma once
 #include <iostream>
 #include <stdexcept>
-#include <type_traits>
-#include <typeinfo>
-#include <cmath>
 
-template <typename T>
 class DynamicArray {
 private:
-    T* data;
+    int* data;
     int size;
     int capacity;
 
-    void checkValue(const T& value) {
-        if constexpr (std::is_integral_v<T>) {
-            if (value > 100 || value < -100) {
-                throw std::invalid_argument("Valeur hors de [-100, 100]");
-            }
-        }
-    }
-
 public:
+    // Constructeur corrigé (size = n)
     DynamicArray(int n = 4) {
         if (n <= 0) {
             throw std::invalid_argument("La taille doit etre positive");
@@ -28,9 +17,9 @@ public:
         size = n;
         capacity = n;
         try {
-            data = new T[capacity];
+            data = new int[capacity];
             for (int i = 0; i < size; i++) {
-                data[i] = T();
+                data[i] = 0;
             }
         }
         catch (const std::bad_alloc&) {
@@ -42,11 +31,12 @@ public:
         delete[] data;
     }
 
+    // Constructeur de copie
     DynamicArray(const DynamicArray& other) {
         size = other.size;
         capacity = other.capacity;
         try {
-            data = new T[capacity];
+            data = new int[capacity];
             for (int i = 0; i < size; i++) {
                 data[i] = other.data[i];
             }
@@ -56,11 +46,32 @@ public:
         }
     }
 
-    void push_back(const T& value) {
-        checkValue(value);
+    // get() avec out_of_range
+    int get(int index) const {
+        if (index < 0 || index >= size) {
+            throw std::out_of_range("Index hors limites dans get()");
+        }
+        return data[index];
+    }
+
+    // set() avec out_of_range et invalid_argument
+    void set(int index, int value) {
+        if (index < 0 || index >= size) {
+            throw std::out_of_range("Index hors limites dans set()");
+        }
+        if (value < -100 || value > 100) {
+            throw std::invalid_argument("Valeur hors de [-100, 100]");
+        }
+        data[index] = value;
+    }
+
+    void push_back(int value) {
+        if (value < -100 || value > 100) {
+            throw std::invalid_argument("Valeur hors de [-100, 100]");
+        }
         if (size >= capacity) {
             int newCap = capacity * 2;
-            T* newData = new T[newCap];
+            int* newData = new int[newCap];
             for (int i = 0; i < size; i++) {
                 newData[i] = data[i];
             }
@@ -72,49 +83,37 @@ public:
         size++;
     }
 
-    T get(int index) const {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("Index hors limites");
-        }
-        return data[index];
-    }
-
-    void set(int index, const T& value) {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("Index hors limites");
-        }
-        checkValue(value);
-        data[index] = value;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const DynamicArray<T>& arr) {
-        os << "[ ";
-        for (int i = 0; i < arr.size; i++) {
-            os << arr.data[i];
-            if (i < arr.size - 1) os << " ";
-        }
-        os << "]";
-        return os;
-    }
-
-    double distance(const DynamicArray<T>& other) const {
-        if constexpr (!std::is_arithmetic_v<T>) {
-            throw std::bad_typeid();
-        }
-        else {
-            if (size != other.size) {
-                throw std::invalid_argument("Les tableaux doivent avoir la meme taille");
+    // add() utilisant get() et set() pour hériter des exceptions out_of_range
+    void add(const DynamicArray& other) {
+        for (int i = 0; i < size; i++) {
+            int val = get(i);
+            int otherVal = 0;
+            if (i < other.size) {
+                otherVal = other.get(i); // Peut lancer out_of_range
             }
-            double sum = 0.0;
-            for (int i = 0; i < size; i++) {
-                double diff = static_cast<double>(data[i]) - static_cast<double>(other.data[i]);
-                sum += diff * diff;
-            }
-            return std::sqrt(sum);
+            set(i, val + otherVal);      // Peut lancer out_of_range et invalid_argument
         }
     }
 
-    int getSize() const {
-        return size;
+    // sub() utilisant get() et set()
+    void sub(const DynamicArray& other) {
+        for (int i = 0; i < size; i++) {
+            int val = get(i);
+            int otherVal = 0;
+            if (i < other.size) {
+                otherVal = other.get(i); // Peut lancer out_of_range
+            }
+            set(i, val - otherVal);      // Peut lancer out_of_range et invalid_argument
+        }
     }
+
+    void print() const {
+        std::cout << "[ ";
+        for (int i = 0; i < size; i++) {
+            std::cout << data[i] << (i < size - 1 ? " " : "");
+        }
+        std::cout << " ]" << std::endl;
+    }
+
+    int getSize() const { return size; }
 };
