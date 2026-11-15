@@ -1,49 +1,39 @@
+﻿#include <iostream>
+#include <utility>
 #include "DynamicArray.h"
-#include <iostream>
-
 using namespace std;
 
+DynamicArray<int> takeByValue(DynamicArray<int> arr) {
+    cout << "  (dans takeByValue) recu : " << arr << endl;
+    return arr;   // move sur le return
+}
+
 int main() {
-    cout << "--- Test 1 : Creation et affichage ---" << endl;
-    DynamicArray arr1(3);
-    arr1.set(0, 10);
-    arr1.set(1, -50);
-    arr1.set(2, 100);
-    arr1.print();
+    cout << "=== PARTIE 5 : REGLE DE TROIS/CINQ ===" << endl;
 
-    cout << "\n--- Test 2 : Constructeur de copie ---" << endl;
-    DynamicArray arr2(arr1);
-    arr2.set(0, 99);
-    cout << "arr2 (copie modifiee) : ";
-    arr2.print();
-    cout << "arr1 (original) : ";
-    arr1.print();
+    // --- Задание 1 : operator= de copie + auto-affectation ---
+    cout << "\n--- Задание 1 : operator= (copie) ---" << endl;
+    DynamicArray<int> a(3); a[0] = 10; a[1] = 20; a[2] = 30;
+    DynamicArray<int> b(2); b[0] = 99; b[1] = 99;
+    cout << "b = a ..." << endl;
+    b = a;                       // [COPY =]
+    cout << "b = " << b << endl;
+    a[0] = 50;                   // valeur VALIDE (<=100) pour prouver la copie profonde
+    cout << "a = " << a << " | b = " << b << endl;
+    cout << "auto-affectation a = a ..." << endl;
+    a = a;                       // protege, pas de crash
+    cout << "a = " << a << endl;
 
-    cout << "\n--- Test 3 : Ajout a la fin (push_back) ---" << endl;
-    DynamicArray arr3(2);
-    arr3.set(0, 5);
-    arr3.set(1, 5);
-    arr3.push_back(10);
-    arr3.push_back(-100);
-    arr3.print();
+    // --- Задание 4 : AVANT / APRES move (par valeur) ---
+    cout << "\n--- Задание 4 : AVANT move (lvalue -> COPIE) ---" << endl;
+    DynamicArray<int> src(3); src[0] = 1; src[1] = 2; src[2] = 3;
+    takeByValue(src);            // on voit [COPY ctor] -> copie couteuse
+    cout << "src intact apres copie : " << src << endl;
 
-    cout << "\n--- Test 4 : Addition et soustraction ---" << endl;
-    DynamicArray arrA(4);
-    arrA.set(0, 10); arrA.set(1, 20); arrA.set(2, 30); arrA.set(3, 40);
+    cout << "\n--- Задание 4 : APRES move (rvalue -> MOVE) ---" << endl;
+    takeByValue(std::move(src)); // on voit [MOVE ctor] -> transfert de pointeur
+    cout << "src VIDE apres move (size=" << src.getSize() << ") : " << src << endl;
 
-    DynamicArray arrB(2);
-    arrB.set(0, 5); arrB.set(1, 15);
-
-    cout << "arrA avant add : ";
-    arrA.print();
-
-    arrA.add(arrB);
-    cout << "arrA apres add : ";
-    arrA.print();
-
-    arrA.sub(arrB);
-    cout << "arrA apres sub : ";
-    arrA.print();
-
+    cout << "\n=== FIN : aucun leak / double-free (verifie par ASan) ===" << endl;
     return 0;
 }
